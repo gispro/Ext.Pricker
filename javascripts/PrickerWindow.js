@@ -52,6 +52,9 @@ Ext4.define('GeoExt.PrickerWindow', {
 
     // Begin i18n
     ,title: 'Area Chart'
+	,baseTitle: 'Area Chart'
+	,getDataErrorText: "Can't load data for selected point"
+	,defaultErrorHeader: 'Message'
     ,fieldComboName1: 'Choose X field'
     ,fieldComboName2: 'Choose Y field'
     ,defaultAxisTitle1: 'X'
@@ -66,7 +69,7 @@ Ext4.define('GeoExt.PrickerWindow', {
     ,layerName: 'Name'
     // End i18n.
 
-    ,renderTo: Ext4.getBody()
+    //,renderTo: Ext.getBody()
 
     /** api: config[chartAliases]
      *  ``Object`` Hash with aliases for axis title.
@@ -97,6 +100,7 @@ Ext4.define('GeoExt.PrickerWindow', {
 
             tbar:[
                     {xtype: 'panel'
+					 ,id: 'prickerMainPanel'
                      ,flex: 1
                      ,frame : false
                      ,border: false
@@ -104,10 +108,11 @@ Ext4.define('GeoExt.PrickerWindow', {
                      ,items:[
                        {xtype: 'panel'
                        ,frame : false
+					   ,id: 'prickerChildPanel'
                        ,border: false
                        ,bodyStyle: 'background:transparent'
-                        ,layout: 'column'
-                         ,items:[
+                       ,layout: 'column'
+                       ,items:[
                              {xtype: 'combo',
                                  store: Ext4.create('Ext.data.Store', { fields: ['id', 'name'] })
                                 ,id: 'field_x'
@@ -136,56 +141,12 @@ Ext4.define('GeoExt.PrickerWindow', {
 
             ,layout: {
                 type: 'hbox',
+				id: 'prickerHboxLayout',
                 pack: 'start',
                 align: 'stretch'
             }
             ,items: [
-              {
-                xtype: 'grid',
-                resizable: true,
-                requires: [
-                    'Ext.grid.plugin.CellEditing',
-                    'Ext.form.field.Text',
-                    'Ext.toolbar.TextItem'
-                ],
-                //plugins: [this.editing],
-                id: 'layer_grid',
-                width: 250,
-                //frame: true,
-                store: Ext4.create('Ext.data.Store', { fields: ['name', 'layer' ] }),
-                dockedItems: [{
-                    xtype: 'toolbar',
-                    items: [
-                      {
-                          iconCls: 'icon-add',
-                          text: this.addText,
-                          scope: this,
-                          handler: this.onAddClick
-                      }
-                      ,{
-                          id: 'delete',
-                          iconCls: 'icon-delete',
-                          text: this.deleteText,
-                          disabled: true,
-                          itemId: 'delete',
-                          scope: this,
-                          handler: this.onDeleteClick
-                      }
-                      ,{
-                        text: this.saveText
-                        ,iconCls: 'icon-save'
-                        ,scope: this.pricker
-                        ,handler: this.pricker.saveChart
-                      }
-                    ]
-                }],
-                columns: [{
-                    text: this.layerName,
-                    flex: 1,
-                    sortable: true,
-                    dataIndex: 'name'
-                }]
-              }
+              
             ]
         })
 
@@ -199,116 +160,79 @@ Ext4.define('GeoExt.PrickerWindow', {
             Ext4.getCmp('chart_type').on('select', this.typeSelect, this )
             Ext4.getCmp('chart_type').fieldLabel = this.typeComboName
 
-            this.gridStore = Ext4.getCmp('layer_grid').store
-            this.gridStore.loadData(this.pricker.layersStoreData)
-            Ext4.getCmp('layer_grid').getSelectionModel().on('selectionchange', this.onSelectChange, this);
-
-
+          
         }
 
 
-
-    ,onSelectChange: function(selModel, selections){
-        Ext4.getCmp('delete').setDisabled(selections.length === 0);
-    }
-
-    ,onDeleteClick: function(){
-        var selection = Ext4.getCmp('layer_grid').getView().getSelectionModel().getSelection()[0];
-        if (selection) {
-            this.pricker.removeLayer(selection.data.name)
-            this.gridStore.loadData(this.pricker.layersStoreData)
-            this.pricker.lastPrick()
-        }
-    }
-
-    ,onAddClick: function(){
-
-        if(!this.addLayerWindow){
-          this.addLayerWindow = Ext4.create('Ext.window.Window', {
-              title: this.addLayerWinTitle,
-              height: 100,
-              width: 210,
-              closeAction: 'hide',
-              items: [
-                  {
-                      xtype: 'textfield',
-                      id: 'new_layer',
-                      allowBlank: false,
-                      margin: 10,
-                      width: 175
-                  }
-              ],
-              dockedItems: [
-                  {
-                      xtype: 'container',
-                      height: 25,
-                      activeItem: 0,
-                      layout: {
-                          align: 'stretch',
-                          type: 'hbox'
-                      },
-                      dock: 'bottom',
-                      items: [
-                          {
-                              xtype: 'button',
-                              margin: 1,
-                              text: this.canselText,
-                              flex: 1,
-                              region: 'east',
-                              scope: this,
-                              handler: function(){this.addLayerWindow.hide()}
-                          },
-                          {
-                              xtype: 'button',
-                              margin: 1,
-                              text: this.okText,
-                              flex: 1,
-                              region: 'west',
-                              scope: this,
-                              handler: this.addLayer
-                          }
-                      ]
-                  }
-              ]
-          })
-        }
-
-        this.addLayerWindow.show()
-
-                 //xtype: 'textfield'
-                //,id: 'new_layer'
-                //,fieldLabel: 'New layer\'s name'
-                //,allowBlank: false  // requires a non-empty value
-
-
-    }
-
-    ,addLayer: function(){
-        this.pricker.addLayer(
-          //new OpenLayers.Layer.WMS(Ext4.getCmp('name').getValue(), Ext4.getCmp('wms').getValue(), {layers: Ext4.getCmp('layers').getValue()})
-          Ext4.getCmp('new_layer').getValue()
-        )
-
-        this.addLayerWindow.hide()
-
-        this.gridStore.loadData(this.pricker.layersStoreData)
-
-        Ext4.getCmp('new_layer').setValue('')
-
-        this.pricker.lastPrick()
-
-    }
-
+	,lastUpdate: null
+		
     ,prepareChartFields: function() {
 
-        if(this.pricker.chartField1) { this.chartField1 = this.pricker.chartField1; this.pricker.chartField1=null }
-        else if(!this.chartField1) this.chartField1 = this.pricker.fieldXStoreData[0].id
+		var source = new gxp.plugins.ChartSource();
+		source.init();
+		
+		var lastUpdate = source.getLastUpdate();
+	
+		var record = source.getDefaultChart();
+		
+		if (record) 
+		
+		{
+			this.setTitle(this.baseTitle+": "+record.name);
+			try {
+			
+				if(this.pricker.chartField1) { this.chartField1 = this.pricker.chartField1; this.pricker.chartField1=null }
+				else if ((!this.chartField1) || (this.lastUpdate!=lastUpdate))  { 
+												var idx = -1;
+												if (record) {
+													for (var i=0;i<this.pricker.fieldXStoreData.length;i++) {
+														if (this.pricker.fieldXStoreData[i].id == record.x_axis)
+															idx = i;
+													}
+												}
+												this.chartField1 = idx!=-1?this.pricker.fieldXStoreData[idx].id:this.pricker.fieldXStoreData[0].id
+												Ext4.getCmp('field_x').setValue(idx!=-1?this.pricker.fieldXStoreData[idx].name:this.pricker.fieldXStoreData[0].name)
+												//this.lastUpdate=lastUpdate
+											}
 
-        if(this.pricker.chartField2) { this.chartField2 = this.pricker.chartField2; this.pricker.chartField2=null }
-        else if(!this.chartField2) this.chartField2 = this.pricker.fieldYStoreData[9].id
-
+				if(this.pricker.chartField2) { this.chartField2 = this.pricker.chartField2; this.pricker.chartField2=null }
+				else if ((!this.chartField2)  || (this.lastUpdate!=lastUpdate))  { 
+												var idx = -1;
+												if (record) {
+													for (var i=0;i<this.pricker.fieldYStoreData.length;i++) {
+														if (this.pricker.fieldYStoreData[i].id == record.y_axis)
+															idx = i;
+													}
+												}
+												this.chartField2 = idx!=-1?this.pricker.fieldYStoreData[idx].id:this.pricker.fieldYStoreData[0].id
+												Ext4.getCmp('field_y').setValue(idx!=-1?this.pricker.fieldYStoreData[idx].name:this.pricker.fieldYStoreData[0].name)
+												this.lastUpdate=lastUpdate
+											}
+			}
+			catch(e) {
+			//	Ext.Msg.alert(this.defaultErrorHeader, this.getDataErrorText);
+			}
+		}
+		else {
+			Ext.Msg.alert(this.defaultErrorHeader, this.errorText);
+			return false;
+		}
         if(this.pricker.chartType) { this.chartType = this.pricker.chartType; this.pricker.chartType=null }
-        else if(!this.chartType) this.chartType = this.pricker.typeStoreData[0].id
+        else if(!this.chartType) {
+									this.chartType = this.pricker.typeStoreData[0].id
+									Ext4.getCmp('chart_type').setValue(this.pricker.typeStoreData[0].name)
+								}
+		else {
+				var value = "";				
+				for (var i=0; i<this.pricker.typeStoreData.length; i++) {
+					if (this.pricker.typeStoreData[i].id==this.chartType) {
+						value = this.pricker.typeStoreData[i].name;
+					}
+				}
+							
+				Ext4.getCmp('chart_type').setValue(value);
+				
+		}
 
         s = Ext4.Array.map(this.pricker.chartStoreData,function(el,i){
             return el[this.chartField1]
@@ -318,7 +242,7 @@ Ext4.define('GeoExt.PrickerWindow', {
                 return this.pricker.chartStoreData[i][this.chartField1] = el[this.chartField1] + '_' + i
               },this)
           }
-
+		return true;
       }
 
     ,prepareChartStores: function() {
@@ -339,7 +263,7 @@ Ext4.define('GeoExt.PrickerWindow', {
      *  Show chart window
      */
     ,show: function() {
-            this.setChart()
+            if (!this.setChart()) return
             this.callParent(arguments)
         }
 
@@ -477,24 +401,31 @@ Ext4.define('GeoExt.PrickerWindow', {
             return common
         }
 
+		
     /** api: method[setChart]
      *  Iitialize Chart
      */
     ,setChart: function() {
 
-            this.prepareChartFields()
+			if(Ext4.getCmp('chart')){
+              this.remove(Ext4.getCmp('chart'))
+            }
+	
+            if (!this.prepareChartFields()) { return false }
             this.prepareChartStores()
             this.prepareComboStores()
 
-            if(Ext4.getCmp('chart')){
-              this.remove(Ext4.getCmp('chart'))
-            }
+            
 
             var chart = Ext4.create('Ext.chart.Chart', this.chartOptions(this.chartType, this.chartField1, this.chartField2))
-            this.add(chart)
-
+			//if (this.pricker.chartStoreFields.length==0) { Ext.Msg.alert(this.defaultErrorText, this.getDataErrorText); return false; } 
+			this.add(chart)
+			return true
         }
 
+	,isValid: function() {
+		return (this.pricker.chartStoreFields.length>0);
+	}
 
     /** private: method[typeSelect]
      *  Type combobox callback on select.

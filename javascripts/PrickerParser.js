@@ -68,7 +68,7 @@ GeoExt.PrickerParser = (function() {
         Ext4.Array.each(responds,function(respond,i){
                 var t = respond.split("--------------------------------------------\n")
 
-                //server can return enything...
+                //server can return anything...
                 if(t[1]){
                   
                   var h = { name: t[0].split("'")[1] }
@@ -146,22 +146,72 @@ GeoExt.PrickerParser = (function() {
                     }
             })
 
-        //var messages = new Ext.data.JsonStore({
-          //fields: fields
-          //,proxy: new Ext.data.HttpProxy({
-                //method: 'GET',
-                //url: this.aliaseUrl
-            //})
-          //,listeners: {
-            //load: messagesLoaded
-          //}
-        //})
-        //messages.load({params: {code: fields.join(','), type: 'field'},method: 'get'});
-        //function messagesLoaded(messages) {
-            //console.log(messages.getCount())
-        //}
     }
 
+	PrickerParser.prototype.parseDescribeFeatureType = function(xmlr) {
+		    var data = []
+            ,fieldsY = []
+            ,fieldsX = []
+            ,allFields = []
+            ,fieldsXData = []
+            ,fieldsYData = []
+            ,fieldsAxisType = {}
+
+        fieldsXData.push({id:'name', name: this.nameTitleAlias})
+
+		responds = xmlr[0].getElementsByTagName('element')
+		
+        var fieldsSetted = false
+        Ext4.Array.each(responds,function(respond,i){
+			var name = respond.attributes.getNamedItem('name').value.toUpperCase()
+			var type = respond.attributes.getNamedItem('type').value.split(":")[1]
+			if (((type=="decimal")||(type=="number")||(type=="double")) && (!fieldsSetted)){
+				fieldsY.push(name)
+				fieldsAxisType[name] = 'Numeric'
+			} else if ((type=="string")&&(!fieldsSetted)){
+				fieldsX.push(name)
+				fieldsAxisType[name] = 'Category'
+			}
+		});
+
+        allFields = Ext4.Array.union(fieldsX, fieldsY)
+
+        Ext4.Ajax.request({
+                 method: 'get'
+                ,url: this.aliaseUrl
+                ,params: {code: allFields.join(','), type: 'field'}
+                ,scope: this
+                ,success: function(response){
+                        var aliases = Ext4.Object.merge(Ext4.decode(response.responseText), {name: this.nameTitleAlias})
+                        Ext4.Array.each(fieldsX,function(el,i){
+                                var tempName = el
+                                if(aliases[el])tempName = aliases[el]
+                                fieldsXData.push({id: el, name: tempName})
+                            })
+                        Ext4.Array.each(fieldsY,function(el,i){
+                                var tempName = el
+                                if(aliases[el])tempName = aliases[el]
+                                fieldsYData.push({id: el, name: tempName})
+                            })
+
+                        this.onParceFunc.call(this.onParceContext, { 
+                                data: data
+                                ,allFields: allFields
+                                ,fieldsXData: fieldsXData
+                                ,fieldsYData: fieldsYData
+                                ,aliases: aliases
+                                ,fieldsAxisType: fieldsAxisType 
+                            })
+
+                    }
+                ,failure: function(er){
+                        console.log( er )
+                    }
+            })
+
+    }
+	
+	
     return PrickerParser
 
 })()

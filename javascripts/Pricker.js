@@ -187,16 +187,23 @@ GeoExt.Pricker = (function() {
      *  Create and show window with charts.
      */
     Pricker.prototype.showChart = function(json) {
-        this.setStores(json)
-
-
+        
+		
+		
+		this.setStores(json)
+		
         if ( !this.prickerWindow ) {
           this.prickerWindow = new Ext4.create('GeoExt.PrickerWindow', Ext4.Object.merge({ pricker: this },this.chartOptions)) 
         } else { 
-          this.prickerWindow.setChart()
+          this.prickerWindow.hide()
+		  this.prickerWindow.setChart()
         }
 
-        this.prickerWindow.show()
+		if (this.prickerWindow.isValid()) {
+			this.prickerWindow.show()
+		}else{
+			Ext.Msg.alert(this.prickerWindow.defaultErrorText, this.prickerWindow.getDataErrorText);
+		}
 
     }
 
@@ -239,6 +246,13 @@ GeoExt.Pricker = (function() {
      */
     Pricker.prototype.draw = function(){}
 
+	Pricker.prototype.getDefaultChartLayers = function(){
+		var source = new gxp.plugins.ChartSource();
+		source.init();
+		var record = source.getDefaultChart();
+		if (record) return record.layers;
+	},
+	
     /** api: method[setLayers]
      *  Update data in layersStoreData.
      */
@@ -259,48 +273,58 @@ GeoExt.Pricker = (function() {
      */
     Pricker.prototype.prick = function(e) {
 
-            this.map.raiseLayer(this.vectorLayer, this.map.layers.length)
+		this.map.raiseLayer(this.vectorLayer, this.map.layers.length)
 
-            this.vectorLayer.destroyFeatures()
+		this.vectorLayer.destroyFeatures()
 
-            var lonlat = this.map.getLonLatFromPixel(e.xy)
-            var point = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat)
-            this.mark = new OpenLayers.Feature.Vector( point
-              ,{some:'data'}
-              ,{externalGraphic: 'externals/gispro/pricker/images/pricker.png'
-              ,graphicHeight: 24
-              ,graphicWidth: 24
-              ,graphicXOffset: -9
-              ,graphicYOffset: -22}
-            )
+		var lonlat = this.map.getLonLatFromPixel(e.xy)
+		var point = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat)
+		this.mark = new OpenLayers.Feature.Vector( point
+		  ,{some:'data'}
+		  ,{externalGraphic: 'externals/gispro/pricker/images/pricker.png'
+		  ,graphicHeight: 24
+		  ,graphicWidth: 24
+		  ,graphicXOffset: -9
+		  ,graphicYOffset: -22}
+		)
 
-            this.vectorLayer.addFeatures(this.mark)
+		this.vectorLayer.addFeatures(this.mark)
 
-            var _self = this
-            ,markEl = document.getElementById(this.mark.geometry.id)
-            markEl.onclick = function(e){
-              _self.prickerWindow.show()
-              e.stopPropagation()
-            }
+		var _self = this
+		,markEl = document.getElementById(this.mark.geometry.id)
+		markEl.onclick = function(e){
+		  _self.prickerWindow.show()
+		  e.stopPropagation()
+		}
 
-            var params = {
-                    REQUEST: "GetFeatureInfo"
-                    ,SERVICE: "WMS"
-                    ,VERSION: "1.1.1"
-                    ,INFO_FORMAT: this.format
-                    ,FEATURE_COUNT: 1
-                    //,BUFFER: this.buffer
-                    ,srs: this.map.baseLayer.projection.projCode
-                    ,BBOX: this.map.getExtent().toBBOX()
-                    ,X: e.xy.x
-                    ,Y: e.xy.y
-                    ,WIDTH: this.map.size.w
-                    ,HEIGHT: this.map.size.h
-                }
 
-            this.lastQueryParams = params
+		var source = new gxp.plugins.ChartSource()
+		source.init({ callback : function() {		
+				var record = source.getDefaultChart()
+				if (record) this.layers = record.layers
+				
+				this.setLayers()
+				
+				var params = {
+						REQUEST: "GetFeatureInfo"
+						,SERVICE: "WMS"
+						,VERSION: "1.1.1"
+						,INFO_FORMAT: this.format
+						,FEATURE_COUNT: 1
+						//,BUFFER: this.buffer
+						,srs: this.map.baseLayer.projection.projCode
+						,BBOX: this.map.getExtent().toBBOX()
+						,X: e.xy.x
+						,Y: e.xy.y
+						,WIDTH: this.map.size.w
+						,HEIGHT: this.map.size.h
+					}
 
-            this.prickQuery(params)
+				this.lastQueryParams = params
+				this.prickQuery(params)
+			},
+			scope: this
+		});
 
         }
 
@@ -321,6 +345,7 @@ GeoExt.Pricker = (function() {
       var responds = []
           ,failRespondCount = 0
 
+		  
       //if (config.authUrl.slice(0,7) == 'http://' && config.authUrl.slice(7,config.authUrl.length - 7).split('/')[0] != window.location.host) authProxy = config.proxy
       //authUrl = authProxy + config.authUrl + 'usernamePasswordLogin.do?josso_cmd=login&josso_back_to=&josso_username='+config.username+'&josso_password='+config.password
       Ext4.Array.each(this.layersStoreData, function(el,i){
@@ -368,39 +393,6 @@ GeoExt.Pricker = (function() {
                   proxy: this.target.proxy
               })
               r.requestId = i
-
-
-
-              //Ext4.Ajax.request({
-                       //method: 'post'
-                      //,url: this.getInfoUrl
-                      //,params: params
-                      //,scope: this
-                      //,success: function(respond){
-                              //responds.push(respond)
-                              //if(responds.length == this.layersStoreData.length - failRespondCount){
-                                      //this.prickerParser.parse(
-                                              //Ext4.Array.sort(responds,function(a,b){
-                                                      //return a.requestId > b.requestId
-                                                  //})
-                                              //.map(function(em){return em.responseText})
-                                          //)
-                                  //}
-                          //}
-                      //,failure: function(er){
-                              //failRespondCount += 1
-                              //if(responds.length == this.layersStoreData.length - failRespondCount){
-                                      //this.prickerParser.parse(
-                                              //Ext4.Array.sort(responds,function(a,b){
-                                                      //return a.requestId > b.requestId
-                                                  //})
-                                              //.map(function(em){return em.responseText})
-                                          //)
-                                  //}
-                          //}
-                  //})
-
-
 
           },this)
       }

@@ -104,6 +104,7 @@ gxp.plugins.PrickerTool = Ext.extend(gxp.plugins.Tool, {
 
         var actions = [new GeoExt.Action({
             menuText: this.menuText,
+			id: "prickerButton",
             iconCls: "gxp-icon-pricker",
             tooltip: this.tooltip,
             control: pricker,
