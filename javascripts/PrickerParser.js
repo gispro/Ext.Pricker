@@ -161,6 +161,8 @@ GeoExt.PrickerParser = (function() {
 
 		responds = xmlr[0].getElementsByTagName('element')
 		
+		if (responds.length==0) responds = xmlr[0].getElementsByTagName('xsd:element')
+		
         var fieldsSetted = false
         Ext4.Array.each(responds,function(respond,i){
 			var name = respond.attributes.getNamedItem('name').value.toUpperCase()
