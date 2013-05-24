@@ -158,9 +158,9 @@ GeoExt.Pricker = (function() {
     }
 
     // Begin i18n
-    Pricker.prototype.lineType = 'Line'
-    Pricker.prototype.columnType = 'Column'
-    Pricker.prototype.areaType = 'Area'
+    Pricker.prototype.lineType = locale.pricker.lineType
+    Pricker.prototype.columnType = locale.pricker.columnType
+    Pricker.prototype.areaType = locale.pricker.areaType
     // End i18n.
 
 

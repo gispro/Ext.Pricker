@@ -28,8 +28,8 @@ gxp.plugins.PrickerTool = Ext.extend(gxp.plugins.Tool, {
     ptype: "gxp_prickertool",
 
     // Begin i18n.
-    tooltip: "Pricker",
-    menuText: "Pricker",
+    tooltip: locale.pricker.tooltip,
+    menuText: locale.pricker.menuText,
     // End i18n.
     
     /** api: config[chartOptions]

@@ -35,7 +35,7 @@ GeoExt.PrickerParser = (function() {
         }
 
     // Begin i18n
-    PrickerParser.prototype.nameTitleAlias = 'name'
+    PrickerParser.prototype.nameTitleAlias = locale.pricker.nameTitleAlias
     // End i18n.
 
 

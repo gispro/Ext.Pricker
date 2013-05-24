@@ -51,22 +51,22 @@ Ext4.define('GeoExt.PrickerWindow', {
     ,maximizable: true
 
     // Begin i18n
-    ,title: 'Area Chart'
-	,baseTitle: 'Area Chart'
-	,getDataErrorText: "Can't load data for selected point"
-	,defaultErrorHeader: 'Message'
-    ,fieldComboName1: 'Choose X field'
-    ,fieldComboName2: 'Choose Y field'
-    ,defaultAxisTitle1: 'X'
-    ,defaultAxisTitle2: 'Y'
-    ,typeComboName: 'Choose type'
-    ,addText: 'Add'
-    ,deleteText: 'Delete'
-    ,saveText: 'Save'
-    ,addLayerWinTitle: 'Add layer'
-    ,canselText: 'Cancel'
-    ,okText: 'Ok'
-    ,layerName: 'Name'
+    ,title: locale.pricker.title
+	,baseTitle: locale.pricker.baseTitle
+	,getDataErrorText: locale.pricker.getDataErrorText
+	,defaultErrorHeader: locale.pricker.defaultErrorHeader
+    ,fieldComboName1: locale.pricker.fieldComboName1
+    ,fieldComboName2: locale.pricker.fieldComboName2
+    ,defaultAxisTitle1: locale.pricker.defaultAxisTitle1
+    ,defaultAxisTitle2: locale.pricker.defaultAxisTitle2
+    ,typeComboName: locale.pricker.typeComboName
+    ,addText: locale.pricker.addText
+    ,deleteText: locale.pricker.deleteText
+    ,saveText: locale.pricker.saveText
+    ,addLayerWinTitle: locale.pricker.addLayerWinTitle
+    ,canselText: locale.pricker.canselText
+    ,okText: locale.pricker.okText
+    ,layerName: locale.pricker.layerName
     // End i18n.
 
     //,renderTo: Ext.getBody()
@@ -210,11 +210,13 @@ Ext4.define('GeoExt.PrickerWindow', {
 											}
 			}
 			catch(e) {
-			//	Ext.Msg.alert(this.defaultErrorHeader, this.getDataErrorText);
+				gxp.plugins.Logger.log("Ошибка при построении графика: " + this.getDataErrorText , gxp.plugins.Logger.prototype.LOG_LEVEL_NETWORK_LOCAL_ERRORS);
+				//	Ext.Msg.alert(this.defaultErrorHeader, this.getDataErrorText);
 			}
 		}
 		else {
 			Ext.Msg.alert(this.defaultErrorHeader, this.errorText);
+			gxp.plugins.Logger.log("Ошибка при построении графика: " + this.errorText, gxp.plugins.Logger.prototype.LOG_LEVEL_NETWORK_LOCAL_ERRORS);
 			return false;
 		}
         if(this.pricker.chartType) { this.chartType = this.pricker.chartType; this.pricker.chartType=null }
