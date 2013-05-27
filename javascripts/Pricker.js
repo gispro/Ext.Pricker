@@ -281,7 +281,7 @@ GeoExt.Pricker = (function() {
 		var point = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat)
 		this.mark = new OpenLayers.Feature.Vector( point
 		  ,{some:'data'}
-		  ,{externalGraphic: 'externals/gispro/pricker/images/pricker.png'
+		  ,{externalGraphic: OVROOT+'externals/gispro/pricker/images/pricker.png'
 		  ,graphicHeight: 24
 		  ,graphicWidth: 24
 		  ,graphicXOffset: -9
