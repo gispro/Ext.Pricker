@@ -20,7 +20,7 @@ GeoExt.PrickerWindow.prototype.okText = 'Ok';
 GeoExt.PrickerWindow.prototype.layerName = 'Слои';
 GeoExt.PrickerWindow.prototype.defaultErrorHeader = 'Уведомление';
 GeoExt.PrickerWindow.prototype.errorText = 'Не найден график по умолчанию. Пожалуйста, создайте его с помощью менеджера графиков';
-GeoExt.PrickerWindow.prototype.getDataErrorText = 'Не удалось получить данные для выбранной точки';
+GeoExt.PrickerWindow.prototype.getDataErrorText = 'Не удалось получить данные для выбранной точки. Возможно, пользователь не аутентифицирован на сервере';
 
 gxp.plugins.PrickerTool.prototype.tooltip = 'Графики';
 gxp.plugins.PrickerTool.prototype.menuText = 'Графики';
